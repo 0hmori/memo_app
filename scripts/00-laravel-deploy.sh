@@ -1,21 +1,13 @@
-# richarvey/nginx-php-fpmをベースとする
-FROM richarvey/nginx-php-fpm:latest
+#!/usr/bin/env bash
+echo "Running composer"
+composer global require hirak/prestissimo
+composer install --no-dev --working-dir=/var/www/html
 
-COPY . .
+echo "Caching config..."
+php artisan config:cache
 
-# Image config
-ENV SKIP_COMPOSER 1
-ENV WEBROOT /var/www/html/public
-ENV PHP_ERRORS_STDERR 1
-ENV RUN_SCRIPTS 1
-ENV REAL_IP_HEADER 1
+echo "Caching routes..."
+php artisan route:cache
 
-# Laravel config
-ENV APP_ENV production
-ENV APP_DEBUG false
-ENV LOG_CHANNEL stderr
-
-# Allow composer to run as root
-ENV COMPOSER_ALLOW_SUPERUSER 1
-
-CMD ["/start.sh"]
+echo "Running migrations..."
+php artisan migrate --force
